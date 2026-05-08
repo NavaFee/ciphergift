@@ -10,7 +10,7 @@ packages/foundry/
 │   ├── IConfidentialVault.sol       # asset-agnostic encrypted-balance interface
 │   ├── ConfidentialETHVault.sol     # ETH-backed vault (gwei-scaled euint64)
 │   ├── ConfidentialERC20Vault.sol   # ERC-20-backed vault (configurable unitDecimals)
-│   └── CipherGift.sol               # packet logic (equal, random, targeted, password, blind)
+│   └── CipherGift.sol               # packet logic (equal, random, targeted, password)
 ├── test/
 │   ├── ConfidentialETHVault.t.sol
 │   ├── ConfidentialERC20Vault.t.sol

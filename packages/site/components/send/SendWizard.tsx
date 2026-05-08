@@ -15,7 +15,6 @@ import { Coin } from "~~/components/primitives/Coin";
 import { Switch } from "~~/components/primitives/Switch";
 import {
   BackIcon,
-  BlindIcon,
   EqualIcon,
   KeyIcon,
   LockIcon,
@@ -37,14 +36,13 @@ import { detectWrap } from "~~/lib/wrap-detect";
 
 const ZERO_ROOT = "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`;
 
-type TypeKey = "RANDOM" | "EQUAL" | "TARGETED" | "PASSWORD" | "BLIND";
+type TypeKey = "RANDOM" | "EQUAL" | "TARGETED" | "PASSWORD";
 
 const TYPE_ICONS: Record<TypeKey, React.ReactNode> = {
   RANDOM: <ShuffleIcon size={14} />,
   EQUAL: <EqualIcon size={14} />,
   TARGETED: <UserIcon size={14} />,
   PASSWORD: <KeyIcon size={14} />,
-  BLIND: <BlindIcon size={14} />,
 };
 
 const EXPIRY_PRESETS: Array<{ hours: number; label: string; sub: string }> = [
@@ -304,9 +302,9 @@ export function SendWizard() {
       toast.error("Insufficient vault balance");
       return;
     }
-    // For RANDOM/BLIND, cap each share at 2× the fair-share size — reveals only
+    // For RANDOM, cap each share at 2× the fair-share size — reveals only
     // an upper bound, not the exact total. EQUAL/TARGETED/PASSWORD leave it 0.
-    const maxShareScalar = type === "RANDOM" || type === "BLIND" ? (totalUnits * 2n) / BigInt(effectiveShareCount) : 0n;
+    const maxShareScalar = type === "RANDOM" ? (totalUnits * 2n) / BigInt(effectiveShareCount) : 0n;
 
     // For TARGETED, build the Merkle tree now so the per-invitee salts are
     // available to render share links once the create tx confirms.
@@ -340,9 +338,7 @@ export function SendWizard() {
             ? PacketType.TARGETED
             : type === "PASSWORD"
               ? PacketType.PASSWORD
-              : type === "BLIND"
-                ? PacketType.BLIND
-                : PacketType.EQUAL,
+              : PacketType.EQUAL,
       expirySecs: expiryHours * 3600,
       maxShareScalar,
       allowlistRoot,
@@ -413,8 +409,8 @@ export function SendWizard() {
             color: "var(--ink-2)",
           }}
         >
-          <strong style={{ color: "var(--warn)" }}>Creation paused.</strong> Existing gifts can still be claimed,
-          revealed, or refunded.
+          <strong style={{ color: "var(--warn)" }}>Creation paused.</strong> Existing gifts can still be claimed or
+          refunded.
         </div>
       )}
 
@@ -501,23 +497,16 @@ export function SendWizard() {
           <div>
             <label className="field-label">Packet type</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-              {(["RANDOM", "EQUAL", "TARGETED", "PASSWORD", "BLIND"] as TypeKey[]).map(k => {
-                const available =
-                  k === "EQUAL" ||
-                  k === "TARGETED" ||
-                  k === "PASSWORD" ||
-                  k === "BLIND" ||
-                  (k === "RANDOM" && PACKET_TYPE_AVAILABLE.RANDOM);
+              {(["RANDOM", "EQUAL", "TARGETED", "PASSWORD"] as TypeKey[]).map(k => {
+                const available = PACKET_TYPE_AVAILABLE[k];
                 const active = type === k;
-                const label = k === "PASSWORD" ? "Password" : k === "BLIND" ? "Blind box" : PACKET_TYPE_LABELS[k];
+                const label = k === "PASSWORD" ? "Password" : PACKET_TYPE_LABELS[k];
                 const hint =
                   k === "PASSWORD"
                     ? "Anyone with the secret phrase can claim."
-                    : k === "BLIND"
-                      ? "Claim now, reveal amount later."
-                      : k === "RANDOM"
-                        ? "FHE-random shares; the last claimer takes the residual."
-                        : PACKET_TYPE_HINTS[k];
+                    : k === "RANDOM"
+                      ? "FHE-random shares; the last claimer takes the residual."
+                      : PACKET_TYPE_HINTS[k];
                 return (
                   <button
                     key={k}

@@ -1,6 +1,9 @@
 /**
  * Mirrors the on-chain `CipherGift.PacketType` enum + UI metadata used
  * by the send wizard, dashboard chips, and inbox card badges.
+ *
+ * The contract also defines `BLIND = 4` but the frontend doesn't surface
+ * that type — see `usePacketEvents` for the boundary filter.
  */
 
 export const PacketType = {
@@ -8,7 +11,6 @@ export const PacketType = {
   EQUAL: 1,
   TARGETED: 2,
   PASSWORD: 3,
-  BLIND: 4,
 } as const;
 
 export type PacketTypeKey = keyof typeof PacketType;
@@ -19,7 +21,6 @@ export const PACKET_TYPE_LABELS: Record<PacketTypeKey, string> = {
   EQUAL: "Equal split",
   TARGETED: "Targeted",
   PASSWORD: "Password",
-  BLIND: "Blind box",
 };
 
 export const PACKET_TYPE_HINTS: Record<PacketTypeKey, string> = {
@@ -27,14 +28,12 @@ export const PACKET_TYPE_HINTS: Record<PacketTypeKey, string> = {
   EQUAL: "Same amount per claim. Predictable.",
   TARGETED: "Only listed addresses can claim. List is encrypted.",
   PASSWORD: "Anyone with the secret phrase can claim.",
-  BLIND: "Claim first, reveal later.",
 };
 
-/** Toggle a packet type off here to hide it from the Send wizard. */
+/** Toggle a packet type off here to grey it out (and tag "v2") in the Send wizard. */
 export const PACKET_TYPE_AVAILABLE: Record<PacketTypeKey, boolean> = {
   RANDOM: true,
   EQUAL: true,
   TARGETED: true,
   PASSWORD: true,
-  BLIND: true,
 };

@@ -26,7 +26,6 @@
 - **Random（随机）** —— 每份金额由 FHE `FHE.randEuint64()` 抽取，受发送方设置的明文上限约束（典型值为 `2 × total / shares`）；最后一个领取人吃残值，确保总额完全分配。
 - **Targeted（定向）** —— 只有持有专属 Merkle salt/proof 的地址才能领取；链上仅存 root，不存邀请名单。
 - **Password（密码）** —— 等额红包，但需要凭口令领取。合约存的是包绑定的 hash，领取走 `claimWithPassword`。
-- **Blind box（盲盒）** —— 领取时只是预留份额，金额既不入账也不可解密；要等领取人显式调用 `reveal` 才揭晓。
 
 所有类型都支持 **过期 + 创建者退款** 未领取的密文残值。红包默认由 cETH 担保，也可以挂在已注册的 ERC-20 vault（如 cUSDC / cZAMA）上。
 
@@ -182,14 +181,13 @@ pnpm deploy:sepolia              # 部署 + 重新生成 packages/site/contracts
 - `NEXT_PUBLIC_CUSDC_VAULT_ADDRESS`、`NEXT_PUBLIC_CZAMA_VAULT_ADDRESS`（如果注册了对应 vault）
 - 可选 `NEXT_PUBLIC_POSTHOG_KEY`、`NEXT_PUBLIC_SENTRY_DSN` 用于观测
 
-部署后建议跑一遍冒烟测试：deposit → 创建 equal 红包 → claim → reveal 一个 blind 红包 → 退款一个过期红包。
+部署后建议跑一遍冒烟测试：deposit → 创建 equal 红包 → claim → 退款一个过期红包。
 
 ### 暂停策略
 
-`CipherGift.pause()` 是合约 owner（一般是 multisig）持有的应急控制开关。它**只**挡 `_createPacket`，不挡领取、揭盲、退款 —— 目的是阻断新增风险，但不锁住已有资金：
+`CipherGift.pause()` 是合约 owner（一般是 multisig）持有的应急控制开关。它**只**挡 `_createPacket`，不挡领取与退款 —— 目的是阻断新增风险，但不锁住已有资金：
 
 - `claim`、`claimTargeted`、`claimWithPassword` —— 始终可用
-- `reveal`、`revealFor` —— 始终可用
 - `closeAndRefund` —— 始终可用
 - `createPacket`、`createPacketWithAsset` —— pause 期间被挡
 
@@ -219,7 +217,7 @@ pnpm contracts:test            # forge test -vv
 | `/`          | 连接钱包页（RainbowKit picker），连上后跳转 `/dashboard`                                     |
 | `/dashboard` | Vault 余额（密文 → 点击解密）、活跃发出红包、快捷领取、汇总统计                              |
 | `/send`      | 创建向导：资产 + 金额 + 类型 + 份数 +（如果 targeted）allowlist + 过期 + 备注 → SigningModal |
-| `/inbox`     | 可领取红包的双列网格；`OpenModal` 跑 claim / 密码 claim / 盲盒 reveal + 解密                 |
+| `/inbox`     | 可领取红包的双列网格；`OpenModal` 跑 claim / 密码 claim + 解密                                |
 | `/sent`      | 用户创建过的所有红包列表                                                                     |
 | `/sent/[id]` | 红包详情（创建者视角）：密文总额、领取数、分享 link、过期后的退款按钮                        |
 | `/history`   | 完整活动表                                                                                   |
@@ -243,9 +241,7 @@ pnpm contracts:test            # forge test -vv
 
 6. **为什么是 password hash 而不是密文比对？** 密码红包是产品层的便利特性：密码本身链下分发，合约只存 `keccak256(abi.encode(packetId, keccak256(bytes(password))))`。这能挡住"分享链接被随便转发"的场景，但不能替代高熵密钥 —— 弱密码仍然可以从公开的交易数据里被暴力破解。
 
-7. **为什么 BLIND 要 reveal 才入账？** 如果 claim 时立即给 vault 入账，vault 余额 handle 就被授权给了用户，差额会在 reveal UX 之前泄露。所以 BLIND 在 `claimedAmount` 里预留份额、扣减包内残值，但要等 `reveal(id)` 才向 vault 入账。
-
-8. **为什么 withdraw 要两阶段？** 释放真实的 ETH / ERC-20 需要明文，但用户余额是密文。Vault 用 `FHE.makePubliclyDecryptable` 给加密 handle 拍个快照，`fulfillWithdraw` 验证 KMS 证明后才转账。请求挂起期间所有 debit 路径被挡，确保兑付的明文不会超过当前加密余额。
+7. **为什么 withdraw 要两阶段？** 释放真实的 ETH / ERC-20 需要明文，但用户余额是密文。Vault 用 `FHE.makePubliclyDecryptable` 给加密 handle 拍个快照，`fulfillWithdraw` 验证 KMS 证明后才转账。请求挂起期间所有 debit 路径被挡，确保兑付的明文不会超过当前加密余额。
 
 ---
 

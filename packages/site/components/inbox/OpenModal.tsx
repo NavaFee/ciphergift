@@ -28,15 +28,12 @@ interface OpenModalProps {
 export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenModalProps) {
   const asset = assetForPacket(packet.assetId);
   const isPasswordPacket = packet.packetType === PacketType.PASSWORD;
-  const isBlindPacket = packet.packetType === PacketType.BLIND;
   // TARGETED packets need an off-chain (salt, proof) pair; without it the
   // contract reverts with `TargetedRequiresProof`. The claim button stays
   // disabled and we point the user at their personalized invite link.
   const isTargetedPacket = packet.packetType === PacketType.TARGETED;
   const missingTargetedProof = isTargetedPacket && !targetedProof;
-  const { phase, errorMessage, cleartextUnits, claim, reveal } = useClaim(packet.id, targetedProof, {
-    deferReveal: isBlindPacket,
-  });
+  const { phase, errorMessage, cleartextUnits, claim } = useClaim(packet.id, targetedProof);
   const [password, setPassword] = useState("");
   const [shaking, setShaking] = useState(false);
 
@@ -114,17 +111,13 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
             >
               {phase === "decrypting"
                 ? "Decrypting your share…"
-                : phase === "sealed"
-                  ? "Ready to reveal"
-                  : phase === "revealing"
-                    ? "Revealing your share…"
-                    : phase === "submitting" || phase === "confirming"
-                      ? "Sealing the claim on-chain…"
-                      : missingTargetedProof
-                        ? "Open with your invite link"
-                        : isPasswordPacket
-                          ? "Enter password to open"
-                          : "Tap to open"}
+                : phase === "submitting" || phase === "confirming"
+                  ? "Sealing the claim on-chain…"
+                  : missingTargetedProof
+                    ? "Open with your invite link"
+                    : isPasswordPacket
+                      ? "Enter password to open"
+                      : "Tap to open"}
             </h3>
 
             {isPasswordPacket && phase === "idle" && (
@@ -212,30 +205,18 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
                     fontFamily: "var(--font-mono)",
                   }}
                 >
-                  {phase === "decrypting" || phase === "revealing"
+                  {phase === "decrypting"
                     ? "fhe.reencrypt(...)"
-                    : phase === "sealed"
-                      ? "— sealed —"
-                      : missingTargetedProof
-                        ? "— invite only —"
-                        : isPasswordPacket
-                          ? "— unlock —"
-                          : isBlindPacket
-                            ? "— claim blind —"
-                            : "— tap —"}
+                    : missingTargetedProof
+                      ? "— invite only —"
+                      : isPasswordPacket
+                        ? "— unlock —"
+                        : "— tap —"}
                 </div>
               </div>
             </div>
 
-            {phase === "sealed" && (
-              <div style={{ marginTop: 18 }}>
-                <Btn kind="fhe" block onClick={reveal}>
-                  Reveal blind box
-                </Btn>
-              </div>
-            )}
-
-            {(phase === "decrypting" || phase === "revealing") && (
+            {phase === "decrypting" && (
               <div style={{ marginTop: 18, fontSize: 11, color: "var(--ink-3)" }}>
                 <DecryptLog />
               </div>

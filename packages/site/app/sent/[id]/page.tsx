@@ -157,7 +157,6 @@ export default function SentDetailPage() {
     1: "equal split",
     2: "targeted",
     3: "password",
-    4: "blind box",
   };
 
   return (

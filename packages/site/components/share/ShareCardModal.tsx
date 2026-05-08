@@ -23,7 +23,6 @@ const PACKET_TYPE_LABEL: Record<PacketTypeValue, string> = {
   1: "equal split",
   2: "targeted",
   3: "password",
-  4: "blind box",
 };
 
 interface ShareCardModalProps {

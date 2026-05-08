@@ -51,8 +51,8 @@ const KNOWN_ERRORS: ReadonlyArray<{ signature: string; friendly?: (args: readonl
   { signature: "UnexpectedAllowlistRoot()", friendly: () => "Only TARGETED packets accept a Merkle root." },
   { signature: "PasswordNeedsSecret()", friendly: () => "PASSWORD packets need a hashed secret." },
   { signature: "UnexpectedPasswordSecret()", friendly: () => "Only PASSWORD packets accept a password hash." },
-  { signature: "RandomNeedsMaxShare()", friendly: () => "RANDOM/BLIND packets need a non-zero maxShareScalar." },
-  { signature: "UnexpectedMaxShare()", friendly: () => "Only RANDOM/BLIND accept maxShareScalar." },
+  { signature: "RandomNeedsMaxShare()", friendly: () => "RANDOM packets need a non-zero maxShareScalar." },
+  { signature: "UnexpectedMaxShare()", friendly: () => "Only RANDOM accepts maxShareScalar." },
   { signature: "InvalidPacketId()", friendly: () => "No packet exists at this id." },
   {
     signature: "TargetedRequiresProof()",
@@ -74,9 +74,6 @@ const KNOWN_ERRORS: ReadonlyArray<{ signature: string; friendly?: (args: readonl
   { signature: "PacketRefunded_()", friendly: () => "Packet has been refunded by the creator." },
   { signature: "PacketNotExpired()", friendly: () => "Packet hasn't expired yet — wait until expiry." },
   { signature: "NotCreator()", friendly: () => "Only the original creator can refund this packet." },
-  { signature: "NotClaimed()", friendly: () => "Reveal requires that you claimed first." },
-  { signature: "AlreadyRevealed()", friendly: () => "You've already revealed this BLIND share." },
-  { signature: "RevealOnlyBlindPackets()", friendly: () => "Reveal only applies to BLIND packets." },
   { signature: "Paused()", friendly: () => "Packet creation is paused by the operator." },
   { signature: "AssetVaultNotRegistered()", friendly: () => "This asset's vault isn't registered with CipherGift." },
   // ── External (KMSVerifier / FHE) ──

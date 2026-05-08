@@ -35,7 +35,6 @@ const TYPE_ICON: Record<PacketTypeValue, React.ReactNode> = {
   1: <EqualIcon size={11} />, // EQUAL
   2: <UserIcon size={11} />, // TARGETED
   3: <LockIcon size={11} />, // PASSWORD
-  4: <GiftIcon size={11} />, // BLIND
 };
 
 const TYPE_LABEL: Record<PacketTypeValue, string> = {
@@ -43,7 +42,6 @@ const TYPE_LABEL: Record<PacketTypeValue, string> = {
   1: "equal",
   2: "targeted",
   3: "password",
-  4: "blind",
 };
 
 const CHAIN_LABEL: Record<number, string> = {

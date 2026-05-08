@@ -137,13 +137,6 @@ export const KeyIcon = ({ size, ...rest }: IconProps) => (
   </svg>
 );
 
-export const BlindIcon = ({ size, ...rest }: IconProps) => (
-  <svg {...base(size)} {...rest}>
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <path d="M3 9h18M9 3v18" />
-  </svg>
-);
-
 export const ZapIcon = ({ size, ...rest }: IconProps) => (
   <svg {...base(size)} {...rest}>
     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />

@@ -9,15 +9,7 @@ import { captureError, trackEvent } from "~~/services/observability";
 
 const ZERO_HANDLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-export type ClaimPhase =
-  | "idle"
-  | "submitting"
-  | "confirming"
-  | "sealed"
-  | "revealing"
-  | "decrypting"
-  | "done"
-  | "error";
+export type ClaimPhase = "idle" | "submitting" | "confirming" | "decrypting" | "done" | "error";
 
 /**
  * Per-invitee Merkle proof material for TARGETED packets — distributed
@@ -39,8 +31,6 @@ interface UseClaimResult {
   cleartextUnits?: bigint;
   /** Trigger the claim tx + post-confirmation decrypt. Idempotent. */
   claim: (password?: string) => Promise<void>;
-  /** For BLIND packets: reveal the reserved share, then decrypt it. */
-  reveal: () => Promise<void>;
   /** Reset to "idle" so the modal can replay. */
   reset: () => void;
 }
@@ -51,17 +41,13 @@ interface UseClaimResult {
  *   2. waitForReceipt
  *   3. read claimedAmount[id][me] handle from chain
  *   4. ensure isAllowed(CipherGift), else useAllow
- *   5. useUserDecrypt → reveal exact share
+ *   5. useUserDecrypt → exact share
  *
  * The OpenModal animation states ("shaking", "decrypting", "done")
  * map onto the `phase` here; `cleartextUnits` is what the modal
  * displays in the +amount reveal.
  */
-export function useClaim(
-  packetId: bigint | undefined,
-  targeted?: TargetedProof,
-  opts: { deferReveal?: boolean } = {},
-): UseClaimResult {
+export function useClaim(packetId: bigint | undefined, targeted?: TargetedProof): UseClaimResult {
   const { address } = useAccount();
   const wrap = useCipherGift();
   const publicClient = usePublicClient();
@@ -70,11 +56,9 @@ export function useClaim(
   const [phase, setPhase] = useState<ClaimPhase>("idle");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [pendingHash, setPendingHash] = useState<`0x${string}` | undefined>();
-  const [revealHash, setRevealHash] = useState<`0x${string}` | undefined>();
   const [decryptEnabled, setDecryptEnabled] = useState(false);
 
   const receipt = useWaitForTransactionReceipt({ hash: pendingHash, pollingInterval: 2_000 });
-  const revealReceipt = useWaitForTransactionReceipt({ hash: revealHash, pollingInterval: 2_000 });
 
   // After confirmation, query claimedAmount[id][me] to grab the share handle.
   const claimedRead = useReadContract({
@@ -135,15 +119,9 @@ export function useClaim(
   // Once tx confirms, advance to decrypting.
   useEffect(() => {
     if (receipt.isSuccess && phase === "confirming") {
-      setPhase(opts.deferReveal ? "sealed" : "decrypting");
-    }
-  }, [opts.deferReveal, receipt.isSuccess, phase]);
-
-  useEffect(() => {
-    if (revealReceipt.isSuccess && phase === "revealing") {
       setPhase("decrypting");
     }
-  }, [revealReceipt.isSuccess, phase]);
+  }, [receipt.isSuccess, phase]);
 
   // Once we have a handle and allow has been granted, kick off decrypt query.
   useEffect(() => {
@@ -237,38 +215,9 @@ export function useClaim(
   const reset = useCallback(() => {
     setPhase("idle");
     setPendingHash(undefined);
-    setRevealHash(undefined);
     setDecryptEnabled(false);
     setErrorMessage(undefined);
   }, []);
 
-  const reveal = useCallback(async () => {
-    if (!wrap || packetId === undefined) {
-      setErrorMessage("Wallet or contract not ready");
-      setPhase("error");
-      return;
-    }
-    try {
-      setPhase("revealing");
-      trackEvent("claim_reveal_start", { wallet: address, packetId: packetId.toString() });
-      const callConfig = {
-        address: wrap.address,
-        abi: wrap.abi,
-        functionName: "reveal",
-        args: [packetId],
-      } as const;
-      if (publicClient && address) {
-        await publicClient.simulateContract({ ...callConfig, account: address });
-      }
-      const hash = await writeContractAsync(callConfig);
-      setRevealHash(hash);
-    } catch (err) {
-      const info = classifyFheError(err);
-      setErrorMessage(info.message);
-      captureError(err, { flow: "claim_reveal", kind: info.kind, packetId: packetId.toString(), wallet: address });
-      setPhase("error");
-    }
-  }, [address, packetId, wrap, writeContractAsync, publicClient]);
-
-  return { phase, errorMessage, cleartextUnits, claim, reveal, reset };
+  return { phase, errorMessage, cleartextUnits, claim, reset };
 }

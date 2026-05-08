@@ -30,7 +30,7 @@ export function useDecryptPacketTotal(
   totalShares: number | undefined,
 ) {
   const wrap = useCipherGift();
-  const isRandom = packetType === 0 || packetType === 4;
+  const isRandom = packetType === 0;
 
   const handleRead = useReadContract({
     address: wrap?.address,

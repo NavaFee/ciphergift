@@ -15,7 +15,7 @@ import { useSentPackets } from "~~/hooks/usePacketEvents";
 import { assetForPacket } from "~~/lib/assets";
 import { expiresInLabel, relativeTimeLabel } from "~~/lib/format";
 
-const PTYPE_LABEL = ["lucky", "equal", "targeted", "password", "blind"] as const;
+const PTYPE_LABEL = ["lucky", "equal", "targeted", "password"] as const;
 
 export default function SentPage() {
   const { isConnected, address } = useAccount();

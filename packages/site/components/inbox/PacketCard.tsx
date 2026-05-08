@@ -22,7 +22,6 @@ const TYPE_META: Record<PacketTypeValue, { icon: React.ReactNode; label: string;
   1: { icon: <EqualIcon size={12} />, label: "Equal split", color: "var(--ink-2)" },
   2: { icon: <UserIcon size={12} />, label: "For you", color: "var(--fhe)" },
   3: { icon: <KeyIcon size={12} />, label: "Password", color: "var(--crypt)" },
-  4: { icon: <GiftIcon size={12} />, label: "Blind", color: "var(--accent)" },
 };
 
 export function PacketCard({ packet, onOpen, disabled }: Props) {

@@ -26,7 +26,6 @@ Targets Sepolia (FHEVM v0.11) and a local FHEVM stack via `pnpm chain`.
 - **Random** — each claimer's share is drawn under FHE via `FHE.randEuint64()`, capped at a public upper bound the sender chose (typically `2 × total / shares`). Last claimer takes the residual so the full total always distributes.
 - **Targeted** — only addresses with a per-invitee Merkle salt/proof can claim; the chain stores only the root, not the invitee list.
 - **Password** — equal-split packet gated by a shared secret phrase. The contract stores a packet-bound hash and claimers call `claimWithPassword`.
-- **Blind box** — random share is reserved on claim, but not credited or decryptable until the claimer explicitly calls `reveal`.
 
 All packet types support **expiry + creator refund** of the unclaimed encrypted residual. Packets can be backed by cETH by default, or by registered ERC-20 vaults such as cUSDC / cZAMA.
 
@@ -186,14 +185,13 @@ After deploying, set the frontend env (`packages/site/.env.local`):
 - `NEXT_PUBLIC_CUSDC_VAULT_ADDRESS`, `NEXT_PUBLIC_CZAMA_VAULT_ADDRESS` (if registered)
 - optional `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_SENTRY_DSN` for observability
 
-A post-deploy smoke test should cover: deposit, create equal packet, claim, reveal a blind packet, refund an expired packet.
+A post-deploy smoke test should cover: deposit, create equal packet, claim, refund an expired packet.
 
 ### Pause policy
 
-`CipherGift.pause()` is an emergency control owned by the contract owner (typically a multisig). It blocks `_createPacket` only — claim, reveal, and refund paths remain open. The intent is to stop new exposure without trapping existing funds:
+`CipherGift.pause()` is an emergency control owned by the contract owner (typically a multisig). It blocks `_createPacket` only — claim and refund paths remain open. The intent is to stop new exposure without trapping existing funds:
 
 - `claim`, `claimTargeted`, `claimWithPassword` — always available
-- `reveal`, `revealFor` — always available
 - `closeAndRefund` — always available
 - `createPacket`, `createPacketWithAsset` — blocked while paused
 
@@ -223,7 +221,7 @@ Coverage includes:
 | `/`          | Connect screen with RainbowKit picker; redirects to `/dashboard` once connected                        |
 | `/dashboard` | Vault balance (cipher → decrypt-on-click), active sent packets, quick claim, summary stats             |
 | `/send`      | Wizard: asset + amount + type + count + (allowlist if targeted) + expiry + note → SigningModal         |
-| `/inbox`     | 2-column grid of claimable packets; `OpenModal` runs claim / password claim / blind reveal + decrypt   |
+| `/inbox`     | 2-column grid of claimable packets; `OpenModal` runs claim / password claim + decrypt                  |
 | `/sent`      | List of all packets the user created                                                                   |
 | `/sent/[id]` | Packet detail (creator view): encrypted total, claimed count, share link, refund button (after expiry) |
 | `/history`   | Full activity table                                                                                    |
@@ -247,9 +245,7 @@ Coverage includes:
 
 6. **Why password hash instead of encrypted password matching?** Password packets are a pragmatic product layer: the secret itself is distributed off-chain, and the contract stores `keccak256(abi.encode(packetId, keccak256(bytes(password))))`. This gates casual link forwarding, but it is not a replacement for high-entropy secrets because weak passwords can still be brute-forced from public transaction data.
 
-7. **Why does BLIND credit only on reveal?** If claim credited the vault immediately, the vault balance handle would be allowed to the user and could leak the delta before the reveal UX. BLIND therefore reserves the share in `claimedAmount`, decrements the packet residual, and credits the vault only when `reveal(id)` runs.
-
-8. **Why two-phase withdrawals?** Releasing real ETH/ERC-20 tokens requires plaintext, but user balances are encrypted. The vault snapshots the encrypted handle with `FHE.makePubliclyDecryptable`, then `fulfillWithdraw` verifies the KMS proof before transferring the clear amount. While a request is pending, debit paths are blocked so the fulfilled cleartext cannot exceed the current encrypted balance.
+7. **Why two-phase withdrawals?** Releasing real ETH/ERC-20 tokens requires plaintext, but user balances are encrypted. The vault snapshots the encrypted handle with `FHE.makePubliclyDecryptable`, then `fulfillWithdraw` verifies the KMS proof before transferring the clear amount. While a request is pending, debit paths are blocked so the fulfilled cleartext cannot exceed the current encrypted balance.
 
 ---
 

@@ -56,9 +56,14 @@ export function useAllPackets(): UseAllPacketsResult {
   const idx = useAllPacketsViaIndexer();
   const chain = useAllPacketsViaChain(!indexerEnabled || idx.failed);
 
+  // Drop any packetType the UI doesn't surface (currently the contract's
+  // BLIND = 4). Filtering at the data boundary keeps every list view free
+  // of unsupported types without each one needing its own guard.
+  const visiblePackets = (raw: PacketSummary[]) => raw.filter(p => p.packetType <= PacketType.PASSWORD);
+
   if (indexerEnabled && !idx.failed) {
     return {
-      packets: idx.packets,
+      packets: visiblePackets(idx.packets),
       isLoading: idx.isLoading,
       source: "indexer",
       indexerDegraded: false,
@@ -66,7 +71,7 @@ export function useAllPackets(): UseAllPacketsResult {
     };
   }
   return {
-    packets: chain.packets,
+    packets: visiblePackets(chain.packets),
     isLoading: chain.isLoading,
     source: "chain",
     indexerDegraded: indexerEnabled && idx.failed,
@@ -302,7 +307,7 @@ export function useIncomingPackets(me?: `0x${string}`) {
       const hasClaimed = claimedReads.data?.[i]?.result === true;
       if (hasClaimed) return false;
       // We *don't* hide creator-self packets — the contract permits it for
-      // EQUAL/RANDOM/BLIND/PASSWORD; treating creators as participants is
+      // EQUAL/RANDOM/PASSWORD; treating creators as participants is
       // correct (they can claim their own slot or "play" their random
       // lottery). For TARGETED specifically, creators only show up if
       // they put themselves on the allowlist (then the invite + proof

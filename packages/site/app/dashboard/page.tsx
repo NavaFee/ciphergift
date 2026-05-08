@@ -137,12 +137,18 @@ export default function DashboardPage() {
             marginBottom: 24,
           }}
         >
-          <Stat
-            label="Vault balance"
-            value={balance.cleartextUnits !== undefined ? `${unitsToEthLabel(balance.cleartextUnits)} ETH` : "—"}
-            sub={balance.cleartextUnits !== undefined ? "decrypted" : "encrypted (decrypt to view)"}
-            encrypted={balance.cleartextUnits === undefined && Boolean(balance.handle)}
-          />
+          <Link
+            href="/vault"
+            title="Open vault to deposit / withdraw"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <Stat
+              label="Vault balance"
+              value={balance.cleartextUnits !== undefined ? `${unitsToEthLabel(balance.cleartextUnits)} ETH` : "—"}
+              sub={balance.cleartextUnits !== undefined ? "decrypted · open vault →" : "open vault to deposit →"}
+              encrypted={balance.cleartextUnits === undefined && Boolean(balance.handle)}
+            />
+          </Link>
           <Stat label="Yet to claim" value={String(incoming.length)} sub="across senders" />
           <Stat label="Your active gifts" value={String(activeSent.length)} sub={`${sent.length} total sent`} />
           <Stat label="Network" value={networkLabel} sub="FHEVM • confidential" accent />
@@ -275,7 +281,7 @@ export default function DashboardPage() {
               <strong>{(Number(wrap.recoveryUnits!) / 1e9).toFixed(4)} ETH</strong> to wrap back to <code>0</code>, then
               top up to your real intent.
             </div>
-            <Link href="/dev/vault" style={{ textDecoration: "none" }}>
+            <Link href="/vault" style={{ textDecoration: "none" }}>
               <Btn kind="primary" size="sm">
                 Open vault to recover
               </Btn>

@@ -15,7 +15,8 @@ import { useUserBalance } from "~~/hooks/useUserBalance";
 import { explainContractError } from "~~/lib/explain-error";
 
 /**
- * Developer page for `ConfidentialETHVault`. Exercises the full lifecycle:
+ * User-facing vault page for `ConfidentialETHVault`. Covers the full
+ * deposit/withdraw lifecycle:
  *   1. Deposit a plaintext ETH amount → encrypted balance grows
  *   2. Read the encrypted handle (cipher mosaic)
  *   3. Click "Decrypt" → EIP-712 sign → reveal exact gwei units
@@ -27,7 +28,7 @@ import { explainContractError } from "~~/lib/explain-error";
  *
  * `Cancel` is exposed as the gateway-timeout escape hatch (5m default).
  */
-export default function VaultDevPage() {
+export default function VaultPage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const balance = useUserBalance();
@@ -254,11 +255,11 @@ export default function VaultDevPage() {
   })();
 
   return (
-    <AppChrome sub="dev/vault">
+    <AppChrome sub="vault">
       <SideNav />
       <div style={{ flex: 1, minWidth: 0, overflow: "auto", padding: 28 }}>
         <div className="tick" style={{ marginBottom: 6 }}>
-          DEV TOOL · CONFIDENTIAL ETH VAULT
+          VAULT · CONFIDENTIAL ETH
         </div>
         <h2
           style={{

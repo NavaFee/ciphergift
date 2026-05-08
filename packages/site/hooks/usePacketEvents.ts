@@ -298,6 +298,18 @@ export function useIncomingPackets(me?: `0x${string}`) {
     return out;
   }, [targetedInviteIds, targetedRootReads.data, invites, me]);
 
+  // Composed refetch: the spread `all.refetch` only kicks the packet list.
+  // After a claim tx, `claimed[id][me]` flips on chain but our local
+  // `claimedReads` keeps the stale `false`, so the just-claimed row would
+  // linger in the inbox until React Query's default re-fetch fires. The
+  // OpenModal close handler calls this refetch — make sure all three
+  // queries it depends on get re-issued, not just the packet list.
+  const refetchAll = useCallback(() => {
+    all.refetch();
+    claimedReads.refetch();
+    targetedRootReads.refetch();
+  }, [all, claimedReads, targetedRootReads]);
+
   const incoming = useMemo<PacketSummary[]>(() => {
     if (!me) return [];
     return all.packets.filter((p, i) => {
@@ -326,7 +338,7 @@ export function useIncomingPackets(me?: `0x${string}`) {
     });
   }, [all.packets, claimedReads.data, invites, me, now, targetedProofValid]);
 
-  return { ...all, incoming, invites };
+  return { ...all, incoming, invites, refetch: refetchAll };
 }
 
 export function useSentPackets(me?: `0x${string}`) {

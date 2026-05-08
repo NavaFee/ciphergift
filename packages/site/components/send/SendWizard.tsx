@@ -1018,7 +1018,7 @@ function VaultGate({
       body: (
         <>
           You need to deposit {asset.symbol} into the vault before sending a gift.{" "}
-          <Link href="/dev/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
+          <Link href="/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
             Deposit {asset.symbol} →
           </Link>
         </>
@@ -1036,7 +1036,7 @@ function VaultGate({
             {recoveryAmount} {asset.symbol}
           </strong>{" "}
           to bring it back to <code>0</code>, then top up to your real intent.{" "}
-          <Link href="/dev/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
+          <Link href="/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
             Open vault →
           </Link>
         </>
@@ -1063,7 +1063,7 @@ function VaultGate({
             {unitsToAssetLabel(balance.cleartextUnits, asset.unitDecimals)} {asset.symbol}
           </strong>
           .{" "}
-          <Link href="/dev/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
+          <Link href="/vault" style={{ color: "var(--accent)", textDecoration: "underline" }}>
             Top up →
           </Link>
         </>
@@ -1123,7 +1123,7 @@ function VaultGate({
                     : "Auth & decrypt"}
             </Btn>
           )}
-          <Link href="/dev/vault" style={{ textDecoration: "none" }}>
+          <Link href="/vault" style={{ textDecoration: "none" }}>
             <Btn kind="ghost" size="sm">
               Manage vault
             </Btn>

@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GiftIcon, HistoryIcon, InboxIcon, LockIcon, SendIcon, SparkIcon } from "~~/components/primitives/icons";
+import {
+  GiftIcon,
+  HistoryIcon,
+  InboxIcon,
+  LockIcon,
+  SendIcon,
+  SparkIcon,
+  ZapIcon,
+} from "~~/components/primitives/icons";
 
 interface NavItem {
   id: string;
@@ -32,6 +40,7 @@ export function SideNav({ inboxBadge }: SideNavProps) {
     },
     { id: "sent", href: "/sent", label: "Sent", icon: <GiftIcon size={16} /> },
     { id: "history", href: "/history", label: "History", icon: <HistoryIcon size={16} /> },
+    { id: "vault", href: "/vault", label: "Vault", icon: <ZapIcon size={16} /> },
   ];
 
   const isActive = (href: string) => pathname === href || pathname?.startsWith(href + "/");

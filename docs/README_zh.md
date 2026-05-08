@@ -223,7 +223,7 @@ pnpm contracts:test            # forge test -vv
 | `/history`   | 完整活动表                                                                                   |
 | `/r/[id]`    | 公共分享 link 落地页 —— 连接钱包后自动弹 claim modal                                         |
 | `/status`    | 运营状态页：indexer 健康度和 fallback 可见性                                                 |
-| `/dev/vault` | 开发者工具：在 `ConfidentialETHVault` 上 deposit / 解密 / 取款                               |
+| `/vault`     | 用户金库页：在 `ConfidentialETHVault` 上 deposit / 解密 / 取款                                |
 
 ---
 

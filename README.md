@@ -227,7 +227,7 @@ Coverage includes:
 | `/history`   | Full activity table                                                                                    |
 | `/r/[id]`    | Public share-link landing — auto-opens the claim modal once connected                                  |
 | `/status`    | Operational status page for indexer health and fallback visibility                                     |
-| `/dev/vault` | Developer tool: deposit / decrypt / withdraw against `ConfidentialETHVault`                            |
+| `/vault`     | User vault: deposit / decrypt / withdraw against `ConfidentialETHVault`                                |
 
 ---
 

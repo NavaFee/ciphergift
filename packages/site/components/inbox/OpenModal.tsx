@@ -7,11 +7,13 @@ import { Brackets } from "~~/components/primitives/Brackets";
 import { Btn } from "~~/components/primitives/Btn";
 import { ErrorPanel } from "~~/components/primitives/ErrorPanel";
 import { CheckIcon, GiftIcon, ShareIcon } from "~~/components/primitives/icons";
+import { ClaimShareCardModal } from "~~/components/share/ClaimShareCardModal";
 import { type TargetedProof, useClaim } from "~~/hooks/useClaim";
 import type { PacketSummary } from "~~/hooks/usePacketEvents";
 import { assetForPacket } from "~~/lib/assets";
-import { unitsToAssetLabel } from "~~/lib/format";
+import { expiresInLabel, unitsToAssetLabel } from "~~/lib/format";
 import { PacketType } from "~~/lib/packet-types";
+import { buildShareLinkUrl } from "~~/lib/share-link";
 
 interface OpenModalProps {
   packet: PacketSummary;
@@ -36,6 +38,7 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
   const { phase, errorMessage, cleartextUnits, claim } = useClaim(packet.id, targetedProof);
   const [password, setPassword] = useState("");
   const [shaking, setShaking] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   // Animate the envelope while we're in submitting/confirming phases.
   useEffect(() => {
@@ -50,6 +53,7 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
   };
 
   return (
+    <>
     <div
       onClick={onClose}
       style={{
@@ -295,7 +299,7 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
               </div>
             )}
             <div style={{ display: "flex", gap: 10 }}>
-              <Btn kind="ghost" block icon={<ShareIcon size={13} />}>
+              <Btn kind="ghost" block icon={<ShareIcon size={13} />} onClick={() => setShowShareCard(true)}>
                 Share
               </Btn>
               <Btn kind="primary" block onClick={onClose}>
@@ -315,5 +319,20 @@ export function OpenModal({ packet, fromLabel, targetedProof, onClose }: OpenMod
         )}
       </div>
     </div>
+    {showShareCard && cleartextUnits !== undefined && (
+      <ClaimShareCardModal
+        url={buildShareLinkUrl(window.location.origin, packet.id)}
+        packetId={packet.id}
+        amountLabel={unitsToAssetLabel(cleartextUnits, asset.unitDecimals, 6)}
+        assetSymbol={asset.symbol}
+        note={packet.note ?? ""}
+        creator={packet.creator}
+        remaining={Math.max(0, packet.totalShares - packet.claimedCount)}
+        totalShares={packet.totalShares}
+        expiresInLabel={expiresInLabel(packet.expiresAt)}
+        onClose={() => setShowShareCard(false)}
+      />
+    )}
+    </>
   );
 }

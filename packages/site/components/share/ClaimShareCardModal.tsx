@@ -18,60 +18,53 @@ import {
   wrapText,
 } from "~~/components/share/share-card-utils";
 import { shortAddr } from "~~/lib/format";
-import { type PacketTypeValue } from "~~/lib/packet-types";
 
 /**
- * Share modal: renders an OKX-style image card (with QR + packet stats) that
- * the user can download as PNG, copy the link from, or share to X / Telegram.
- *
- * X / Telegram share URLs only carry text+link — uploading the PNG is up to
- * the user (browsers can't push a file into an external composer). We default
- * the message text to a short blurb the user can edit.
+ * "Brag card" the claimer can post after opening a packet. Mirrors the
+ * 720×920 visual of `ShareCardModal` but leads with the +amount hero
+ * instead of packet metadata. The QR still points at `/r/[id]` so
+ * friends arrive on the same landing page (and can claim if shares
+ * remain) — the claimer's amount itself is never embedded into the
+ * link, only into the card image the claimer chooses to post.
  */
 
-const PACKET_TYPE_LABEL: Record<PacketTypeValue, string> = {
-  0: "lucky · random",
-  1: "equal split",
-  2: "targeted",
-  3: "password",
-};
-
-interface ShareCardModalProps {
+interface ClaimShareCardModalProps {
   url: string;
   packetId: bigint;
-  note: string;
+  /** Pre-formatted amount string, e.g. "0.000328". */
+  amountLabel: string;
   assetSymbol: string;
-  packetType: PacketTypeValue;
-  totalShares: number;
-  claimedCount: number;
+  note: string;
   creator: string;
+  remaining: number;
+  totalShares: number;
   expiresInLabel?: string;
   onClose: () => void;
 }
 
-const DEFAULT_MESSAGE = "🎁 You've got a confidential CipherGift — claim before it expires.";
-
-export function ShareCardModal({
+export function ClaimShareCardModal({
   url,
   packetId,
-  note,
+  amountLabel,
   assetSymbol,
-  packetType,
-  totalShares,
-  claimedCount,
+  note,
   creator,
+  remaining,
+  totalShares,
   expiresInLabel,
   onClose,
-}: ShareCardModalProps) {
+}: ClaimShareCardModalProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>();
   const [imgDataUrl, setImgDataUrl] = useState<string>();
-  const [message, setMessage] = useState(DEFAULT_MESSAGE);
+  const defaultMessage = useMemo(
+    () => `🎁 Just claimed +${amountLabel} ${assetSymbol} from a CipherGift — confidential gifts on FHE.`,
+    [amountLabel, assetSymbol],
+  );
+  const [message, setMessage] = useState(defaultMessage);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const remaining = Math.max(0, totalShares - claimedCount);
-  const title = note?.trim() || "Untitled gift";
-
-  // Derive QR (white-on-dark so it composites cleanly onto the card).
+  // QR uses the same yellow palette as the creator card so both decks
+  // feel like a series.
   useEffect(() => {
     let cancelled = false;
     QRCode.toDataURL(url, {
@@ -84,15 +77,13 @@ export function ShareCardModal({
         if (!cancelled) setQrDataUrl(next);
       })
       .catch(() => {
-        // Non-fatal: card still renders, just without the QR overlay.
+        // Non-fatal: card still renders without the QR overlay.
       });
     return () => {
       cancelled = true;
     };
   }, [url]);
 
-  // Render card -> canvas -> PNG once the QR is ready. We re-render whenever
-  // any text input changes so the download always reflects the latest state.
   useEffect(() => {
     if (!qrDataUrl) return;
     const canvas = canvasRef.current;
@@ -102,14 +93,13 @@ export function ShareCardModal({
     const img = new Image();
     img.onload = () => {
       drawCard(ctx, {
-        title,
-        packetId,
+        amountLabel,
         assetSymbol,
-        packetType,
-        totalShares,
-        claimedCount,
-        remaining,
+        packetId,
+        note,
         creator,
+        remaining,
+        totalShares,
         expiresInLabel,
         url,
         qrImage: img,
@@ -117,25 +107,13 @@ export function ShareCardModal({
       try {
         setImgDataUrl(canvas.toDataURL("image/png"));
       } catch {
-        // Tainted canvas safety net — ignore, download button just falls back to QR-only image.
+        // Tainted canvas safety net.
       }
     };
     img.src = qrDataUrl;
-  }, [
-    qrDataUrl,
-    title,
-    packetId,
-    assetSymbol,
-    packetType,
-    totalShares,
-    claimedCount,
-    remaining,
-    creator,
-    expiresInLabel,
-    url,
-  ]);
+  }, [qrDataUrl, amountLabel, assetSymbol, packetId, note, creator, remaining, totalShares, expiresInLabel, url]);
 
-  const onCopy = async () => {
+  const onCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
@@ -174,7 +152,7 @@ export function ShareCardModal({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 110,
+        zIndex: 120,
         padding: 24,
         overflowY: "auto",
       }}
@@ -211,27 +189,23 @@ export function ShareCardModal({
           ×
         </button>
 
-        {/* LEFT: live card preview (HTML mirror of the canvas). */}
         <div>
           <div className="tick" style={{ marginBottom: 10 }}>
-            SHARE CARD
+            CLAIM CARD
           </div>
           <CardPreview
-            title={title}
-            packetId={packetId}
+            amountLabel={amountLabel}
             assetSymbol={assetSymbol}
-            packetType={packetType}
-            totalShares={totalShares}
-            claimedCount={claimedCount}
-            remaining={remaining}
+            packetId={packetId}
+            note={note}
             creator={creator}
-            expiresInLabel={expiresInLabel}
+            remaining={remaining}
+            totalShares={totalShares}
             qrDataUrl={qrDataUrl}
             url={url}
           />
         </div>
 
-        {/* RIGHT: message editor + actions. */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
           <div>
             <div className="tick" style={{ marginBottom: 8 }}>
@@ -278,7 +252,7 @@ export function ShareCardModal({
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {imgDataUrl ? (
-              <a href={imgDataUrl} download={`ciphergift-packet-${packetId}.png`} style={{ textDecoration: "none" }}>
+              <a href={imgDataUrl} download={`ciphergift-claim-${packetId}.png`} style={{ textDecoration: "none" }}>
                 <Btn kind="primary" block icon={<DownloadIcon size={12} />}>
                   Save Image
                 </Btn>
@@ -288,7 +262,7 @@ export function ShareCardModal({
                 Save Image
               </Btn>
             )}
-            <Btn kind="ghost" block icon={<CopyIcon size={12} />} onClick={onCopy}>
+            <Btn kind="ghost" block icon={<CopyIcon size={12} />} onClick={onCopyLink}>
               Copy Link
             </Btn>
             <a href={xHref} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
@@ -314,11 +288,10 @@ export function ShareCardModal({
 
           <p style={{ fontSize: 11, color: "var(--ink-3)", margin: 0, lineHeight: 1.5 }}>
             X and Telegram only auto-fill the message and link. To attach the card image, save it first and drop it into
-            the composer.
+            the composer. {expiresInLabel ? `· packet expires ${expiresInLabel}` : null}
           </p>
         </div>
 
-        {/* Hidden canvas used to mint the downloadable PNG. */}
         <canvas ref={canvasRef} width={CARD_W} height={CARD_H} style={{ display: "none" }} />
       </div>
     </div>
@@ -326,33 +299,20 @@ export function ShareCardModal({
 }
 
 interface CardData {
-  title: string;
-  packetId: bigint;
+  amountLabel: string;
   assetSymbol: string;
-  packetType: PacketTypeValue;
-  totalShares: number;
-  claimedCount: number;
-  remaining: number;
+  packetId: bigint;
+  note: string;
   creator: string;
-  expiresInLabel?: string;
+  remaining: number;
+  totalShares: number;
   qrDataUrl?: string;
   url: string;
 }
 
 function CardPreview(props: CardData) {
-  const {
-    title,
-    packetId,
-    assetSymbol,
-    packetType,
-    totalShares,
-    claimedCount,
-    remaining,
-    creator,
-    expiresInLabel,
-    qrDataUrl,
-    url,
-  } = props;
+  const { amountLabel, assetSymbol, packetId, note, creator, remaining, totalShares, qrDataUrl, url } = props;
+  const claimable = remaining > 0;
   return (
     <div
       style={{
@@ -366,7 +326,6 @@ function CardPreview(props: CardData) {
       }}
     >
       <Brackets />
-      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -379,65 +338,64 @@ function CardPreview(props: CardData) {
         }}
       >
         <span>
-          CIPHERGIFT <span style={{ color: COLORS.accent }}>·</span> CONFIDENTIAL GIFT
+          CIPHERGIFT <span style={{ color: COLORS.fhe }}>·</span> CLAIMED
         </span>
         <span>#{String(packetId)}</span>
       </div>
 
-      {/* Title */}
-      <div style={{ marginTop: 16 }}>
+      {/* Hero: +amount */}
+      <div style={{ marginTop: 28, textAlign: "center" }}>
         <div
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: 26,
-            fontWeight: 600,
-            letterSpacing: "-0.02em",
-            color: COLORS.ink,
-            lineHeight: 1.2,
+            fontSize: 56,
+            fontWeight: 700,
+            letterSpacing: "-0.04em",
+            color: COLORS.accent,
+            lineHeight: 1,
+          }}
+        >
+          +{amountLabel}
+        </div>
+        <div
+          style={{
+            marginTop: 6,
+            fontFamily: "var(--font-mono)",
+            fontSize: 14,
+            letterSpacing: "0.16em",
+            color: COLORS.ink2,
+          }}
+        >
+          {assetSymbol}
+        </div>
+      </div>
+
+      {/* Note */}
+      {note?.trim() && (
+        <div
+          style={{
+            marginTop: 18,
+            fontStyle: "italic",
+            fontSize: 13,
+            lineHeight: 1.5,
+            color: COLORS.ink2,
+            textAlign: "center",
+            padding: "0 22px",
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}
         >
-          {title}
+          &ldquo;{note.trim()}&rdquo;
         </div>
-        <div
-          style={{
-            marginTop: 6,
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            color: COLORS.ink2,
-            letterSpacing: "0.06em",
-          }}
-        >
-          {assetSymbol} · {PACKET_TYPE_LABEL[packetType]}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div
-        style={{
-          marginTop: 18,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 1,
-          background: COLORS.line,
-          border: `1px solid ${COLORS.line}`,
-          borderRadius: 10,
-          overflow: "hidden",
-        }}
-      >
-        <Stat label="CLAIMED" value={`${claimedCount}/${totalShares}`} />
-        <Stat label="REMAINING" value={String(remaining)} accent />
-        <Stat label="EXPIRES" value={expiresInLabel ?? "—"} />
-      </div>
+      )}
 
       {/* QR */}
-      <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
+      <div style={{ marginTop: 22, display: "flex", justifyContent: "center" }}>
         <div
           style={{
-            width: "55%",
+            width: "48%",
             aspectRatio: "1",
             background: COLORS.accent,
             borderRadius: 8,
@@ -475,10 +433,9 @@ function CardPreview(props: CardData) {
           color: COLORS.ink2,
         }}
       >
-        SCAN TO CLAIM · {truncateUrl(url, 42)}
+        {claimable ? `WANT ONE? ${remaining}/${totalShares} LEFT` : "ALREADY FULLY CLAIMED"} · {truncateUrl(url, 38)}
       </div>
 
-      {/* Footer */}
       <div
         style={{
           position: "absolute",
@@ -503,37 +460,6 @@ function CardPreview(props: CardData) {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div style={{ padding: "12px 14px", background: COLORS.bg, minWidth: 0 }}>
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: 9,
-          letterSpacing: "0.16em",
-          color: COLORS.ink3,
-          marginBottom: 6,
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: 18,
-          fontWeight: 600,
-          color: accent ? COLORS.accent : COLORS.ink,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
 function truncateUrl(url: string, max: number) {
   if (url.length <= max) return url;
   return `${url.slice(0, max - 1)}…`;
@@ -541,11 +467,13 @@ function truncateUrl(url: string, max: number) {
 
 interface DrawData extends Omit<CardData, "qrDataUrl"> {
   qrImage: HTMLImageElement;
+  expiresInLabel?: string;
 }
 
 /**
- * Draws the same card visual into a 2D canvas so we can export a PNG.
- * Layout intentionally mirrors CardPreview, just without DOM/CSS conveniences.
+ * Mirrors `CardPreview` onto a 2D canvas so we can export PNG. Layout
+ * intentionally tracks the React preview — keep them in sync if either
+ * changes.
  */
 function drawCard(ctx: CanvasRenderingContext2D, d: DrawData) {
   const W = CARD_W;
@@ -554,16 +482,13 @@ function drawCard(ctx: CanvasRenderingContext2D, d: DrawData) {
   const fontDisplay = "'Space Grotesk', 'Inter', system-ui, sans-serif";
   const fontMono = "'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace";
 
-  // Background
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Outer border
   ctx.strokeStyle = COLORS.line;
   ctx.lineWidth = 2;
   ctx.strokeRect(1, 1, W - 2, H - 2);
 
-  // Corner brackets (yellow, ~28px)
   drawBrackets(ctx, W, H, 28, 4, COLORS.accent);
 
   // Header
@@ -571,65 +496,40 @@ function drawCard(ctx: CanvasRenderingContext2D, d: DrawData) {
   ctx.font = `600 14px ${fontMono}`;
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
-  ctx.fillText("CIPHERGIFT · CONFIDENTIAL GIFT", PAD, PAD + 14);
+  ctx.fillText("CIPHERGIFT · CLAIMED", PAD, PAD + 14);
   ctx.textAlign = "right";
   ctx.fillText(`#${String(d.packetId)}`, W - PAD, PAD + 14);
 
-  // Title
-  ctx.textAlign = "left";
-  ctx.fillStyle = COLORS.ink;
-  ctx.font = `600 36px ${fontDisplay}`;
-  const titleLines = wrapText(ctx, d.title, W - PAD * 2, 2);
-  let cursorY = PAD + 70;
-  for (const line of titleLines) {
-    ctx.fillText(line, PAD, cursorY);
-    cursorY += 42;
+  // Hero: +amount
+  const heroY = PAD + 130;
+  ctx.textAlign = "center";
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = `700 110px ${fontDisplay}`;
+  ctx.fillText(truncateForWidth(ctx, `+${d.amountLabel}`, W - PAD * 2), W / 2, heroY);
+
+  // Asset symbol below hero
+  ctx.fillStyle = COLORS.ink2;
+  ctx.font = `500 22px ${fontMono}`;
+  ctx.fillText(d.assetSymbol, W / 2, heroY + 44);
+
+  let cursorY = heroY + 100;
+
+  // Note (optional, italic, up to 2 lines)
+  if (d.note?.trim()) {
+    ctx.fillStyle = COLORS.ink2;
+    ctx.font = `italic 500 22px ${fontDisplay}`;
+    const noteLines = wrapText(ctx, `"${d.note.trim()}"`, W - PAD * 2 - 60, 2);
+    for (const line of noteLines) {
+      ctx.fillText(line, W / 2, cursorY);
+      cursorY += 32;
+    }
+    cursorY += 10;
   }
 
-  // Subtitle (asset · type)
-  ctx.fillStyle = COLORS.ink2;
-  ctx.font = `500 16px ${fontMono}`;
-  ctx.fillText(`${d.assetSymbol}  ·  ${PACKET_TYPE_LABEL[d.packetType]}`, PAD, cursorY + 6);
-
-  // Stats row
-  const statY = cursorY + 38;
-  const statH = 96;
-  const statW = (W - PAD * 2) / 3;
-  const stats: Array<[string, string, boolean]> = [
-    ["CLAIMED", `${d.claimedCount}/${d.totalShares}`, false],
-    ["REMAINING", String(d.remaining), true],
-    ["EXPIRES", d.expiresInLabel ?? "—", false],
-  ];
-  // Group bg
-  ctx.fillStyle = COLORS.bg2;
-  roundRect(ctx, PAD, statY, W - PAD * 2, statH, 12, true, false);
-  // Border
-  ctx.strokeStyle = COLORS.line;
-  ctx.lineWidth = 1;
-  roundRect(ctx, PAD, statY, W - PAD * 2, statH, 12, false, true);
-  stats.forEach((s, i) => {
-    const x = PAD + statW * i;
-    if (i > 0) {
-      ctx.strokeStyle = COLORS.line;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x, statY + 18);
-      ctx.lineTo(x, statY + statH - 18);
-      ctx.stroke();
-    }
-    ctx.fillStyle = COLORS.ink3;
-    ctx.font = `600 12px ${fontMono}`;
-    ctx.textAlign = "left";
-    ctx.fillText(s[0], x + 18, statY + 30);
-    ctx.fillStyle = s[2] ? COLORS.accent : COLORS.ink;
-    ctx.font = `600 26px ${fontDisplay}`;
-    ctx.fillText(truncateForWidth(ctx, s[1], statW - 36), x + 18, statY + 64);
-  });
-
   // QR block
-  const qrSize = 280;
+  const qrSize = 240;
   const qrX = (W - qrSize) / 2;
-  const qrY = statY + statH + 36;
+  const qrY = cursorY + 10;
   ctx.fillStyle = COLORS.accent;
   roundRect(ctx, qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 12, true, false);
   ctx.strokeStyle = COLORS.line2;
@@ -637,11 +537,12 @@ function drawCard(ctx: CanvasRenderingContext2D, d: DrawData) {
   roundRect(ctx, qrX - 14, qrY - 14, qrSize + 28, qrSize + 28, 12, false, true);
   ctx.drawImage(d.qrImage, qrX, qrY, qrSize, qrSize);
 
-  // "SCAN TO CLAIM · url"
+  // Tagline
+  const tag =
+    d.remaining > 0 ? `WANT ONE? ${d.remaining}/${d.totalShares} LEFT` : "ALREADY FULLY CLAIMED";
   ctx.fillStyle = COLORS.ink2;
   ctx.font = `500 13px ${fontMono}`;
-  ctx.textAlign = "center";
-  ctx.fillText(`SCAN TO CLAIM · ${truncateForWidth(ctx, d.url, W - PAD * 2)}`, W / 2, qrY + qrSize + 50);
+  ctx.fillText(`${tag} · ${truncateForWidth(ctx, d.url, W - PAD * 2)}`, W / 2, qrY + qrSize + 44);
 
   // Footer
   ctx.fillStyle = COLORS.ink3;
@@ -652,4 +553,3 @@ function drawCard(ctx: CanvasRenderingContext2D, d: DrawData) {
   ctx.fillStyle = COLORS.fhe;
   ctx.fillText("● FHE — only claimer decrypts", W - PAD, H - PAD);
 }
-

@@ -1,0 +1,76 @@
+specVersion: 1.0.0
+description: CipherGift — privacy-preserving gifts, FHE-backed.
+repository: https://github.com/NavaFee/ciphergift
+schema:
+  file: ./schema.graphql
+
+# NOTE: addresses + startBlock here are placeholders. Before `graph deploy`,
+# fill them in from your Sepolia (or other network) deployment — the same
+# values that live in packages/indexer/.env.local for the legacy indexer.
+dataSources:
+  - kind: ethereum
+    name: CipherGift
+    network: sepolia
+    source:
+      address: "0x1BFE706fC87B8C4Fef962b1a275586769FAD746E"
+      abi: CipherGift
+      startBlock: 10812746
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/cipher-gift.ts
+      entities:
+        - Packet
+        - Claim
+        - Reveal
+        - AssetVault
+        - OperationsState
+      abis:
+        - name: CipherGift
+          file: ./abis/CipherGift.json
+      eventHandlers:
+        - event: PacketCreated(indexed uint256,indexed address,uint8,uint32,uint64)
+          handler: handlePacketCreated
+        - event: PacketAssetBound(indexed uint256,indexed address)
+          handler: handlePacketAssetBound
+        - event: PacketClaimed(indexed uint256,indexed address)
+          handler: handlePacketClaimed
+        - event: PacketRevealed(indexed uint256,indexed address)
+          handler: handlePacketRevealed
+        - event: PacketRefunded(indexed uint256)
+          handler: handlePacketRefunded
+        - event: AssetVaultSet(indexed address,bool)
+          handler: handleAssetVaultSet
+        - event: Paused(indexed address)
+          handler: handlePaused
+        - event: Unpaused(indexed address)
+          handler: handleUnpaused
+        - event: OwnershipTransferStarted(indexed address,indexed address)
+          handler: handleOwnershipTransferStarted
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+  - kind: ethereum
+    name: ConfidentialETHVault
+    network: sepolia
+    source:
+      address: "0x2D32FBb47c9A52264d1d954f98277Cd5f5830fBb"
+      abi: ConfidentialETHVault
+      startBlock: 10812745
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/vault.ts
+      entities:
+        - Withdrawal
+      abis:
+        - name: ConfidentialETHVault
+          file: ./abis/ConfidentialETHVault.json
+      eventHandlers:
+        - event: WithdrawRequested(indexed uint256,indexed address,bytes32)
+          handler: handleWithdrawRequested
+        - event: WithdrawFulfilled(indexed uint256,indexed address,uint64,uint256)
+          handler: handleWithdrawFulfilled
+        - event: WithdrawCancelled(indexed uint256,indexed address)
+          handler: handleWithdrawCancelled

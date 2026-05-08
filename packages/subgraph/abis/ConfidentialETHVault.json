@@ -1,0 +1,42 @@
+[
+  {
+    "type": "event",
+    "name": "Deposited",
+    "anonymous": false,
+    "inputs": [
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "weiAmount", "type": "uint256", "indexed": false },
+      { "name": "units", "type": "uint64", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "WithdrawRequested",
+    "anonymous": false,
+    "inputs": [
+      { "name": "reqId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "balanceHandle", "type": "bytes32", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "WithdrawFulfilled",
+    "anonymous": false,
+    "inputs": [
+      { "name": "reqId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "units", "type": "uint64", "indexed": false },
+      { "name": "weiAmount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "WithdrawCancelled",
+    "anonymous": false,
+    "inputs": [
+      { "name": "reqId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true }
+    ]
+  }
+]

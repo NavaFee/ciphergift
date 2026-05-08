@@ -1,0 +1,689 @@
+/* ───────────────────────────────────────
+   CipherGift — design tokens
+   Ported verbatim from ciphergift-design/styles.css.
+   Zama-ish dark + warm yellow geometric vibes.
+   ─────────────────────────────────────── */
+
+:root {
+  /* Core palette */
+  --bg: #0a0a0a;
+  --bg-1: #111111;
+  --bg-2: #181818;
+  --bg-3: #222222;
+  --line: #2a2a2a;
+  --line-2: #3a3a3a;
+  --ink: #f5f5f0;
+  --ink-2: #b8b8b0;
+  --ink-3: #6a6a64;
+  --ink-4: #44443f;
+
+  /* Brand: warm geometric yellow */
+  --accent: #ffd200;
+  --accent-2: #ffe65a;
+  --accent-ink: #0a0a0a;
+
+  /* FHE / encrypted state */
+  --fhe: #b6f569; /* "decrypted" success green */
+  --fhe-2: #7ad154;
+  --crypt: #a78bfa; /* "encrypted/locked" purple */
+  --crypt-2: #6d4ce0;
+
+  /* Status */
+  --danger: #ff5e3a;
+  --warn: #ffaa3a;
+
+  /* Type — system stacks keep builds deterministic without remote font fetches. */
+  --font-display: "Space Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 14px;
+  --r-4: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.cr-app {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Encrypted text (FHE ciphertext) — pixelated/blurred mosaic ─── */
+.cipher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  position: relative;
+}
+.cipher-blob {
+  display: inline-block;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--crypt) 0 6px,
+    var(--crypt-2) 6px 11px,
+    #4b2cb8 11px 16px,
+    var(--crypt) 16px 23px,
+    #2a1268 23px 28px,
+    var(--crypt-2) 28px 34px
+  );
+  background-size: 100% 100%;
+  filter: blur(0.4px) saturate(1.05);
+  height: 1em;
+  border-radius: 2px;
+  vertical-align: -0.12em;
+  position: relative;
+  overflow: hidden;
+}
+.cipher-blob::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  animation: cipher-shimmer 2.4s linear infinite;
+}
+@keyframes cipher-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.cipher-tag {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crypt);
+  border: 1px solid var(--crypt);
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* ─── Buttons ─── */
+.cr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--r-2);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.08s,
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.cr-btn:active {
+  transform: translateY(1px);
+}
+.cr-btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.cr-btn-primary:hover {
+  background: var(--accent-2);
+}
+.cr-btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-2);
+}
+.cr-btn-ghost:hover {
+  border-color: var(--ink-2);
+}
+.cr-btn-dark {
+  background: var(--bg-2);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.cr-btn-dark:hover {
+  background: var(--bg-3);
+}
+.cr-btn-fhe {
+  background: var(--fhe);
+  color: #08130a;
+}
+.cr-btn-fhe:hover {
+  background: var(--fhe-2);
+}
+.cr-btn-sm {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.cr-btn-lg {
+  height: 52px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+.cr-btn-block {
+  width: 100%;
+}
+.cr-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Cards / panels ─── */
+.panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-3);
+}
+.panel-flat {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+}
+
+/* ─── Form fields ─── */
+.field-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+.cr-input,
+.cr-textarea,
+.cr-select {
+  width: 100%;
+  background: var(--bg-2);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-2);
+  padding: 12px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.cr-input:focus,
+.cr-textarea:focus,
+.cr-select:focus {
+  border-color: var(--accent);
+  background: var(--bg-3);
+}
+.cr-input.mono {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+.cr-textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+/* ─── Mono dot/dash ─── */
+.tick {
+  font-family: var(--font-mono);
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+/* ─── Badge ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border: 1px solid var(--line-2);
+  color: var(--ink-2);
+  background: var(--bg-2);
+}
+.badge.b-fhe {
+  color: var(--crypt);
+  border-color: var(--crypt);
+  background: rgba(167, 139, 250, 0.06);
+}
+.badge.b-live {
+  color: var(--fhe);
+  border-color: var(--fhe);
+  background: rgba(182, 245, 105, 0.06);
+}
+.badge.b-warn {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: rgba(255, 170, 58, 0.06);
+}
+.badge.b-accent {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 210, 0, 0.06);
+}
+.badge.b-dim {
+  color: var(--ink-3);
+  border-color: var(--line-2);
+}
+
+/* ─── Geometric corner brackets ─── */
+.bracket-tl,
+.bracket-tr,
+.bracket-bl,
+.bracket-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--accent);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.bracket-tl {
+  top: -1px;
+  left: -1px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+.bracket-tr {
+  top: -1px;
+  right: -1px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+.bracket-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+.bracket-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* ─── Geometric tile / dot grid ─── */
+.tile-bg {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+.dot-bg {
+  background-image: radial-gradient(var(--line-2) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+/* ─── Gift visual ─── */
+.envelope {
+  position: relative;
+  border-radius: var(--r-3);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2618 60%, #382c00 100%);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+}
+.envelope-yellow {
+  background: linear-gradient(135deg, #ffd200 0%, #ffb800 70%, #d49a00 100%);
+  color: var(--accent-ink);
+}
+.envelope-locked {
+  background: repeating-linear-gradient(45deg, #1a1530 0 6px, #251c45 6px 12px);
+  border: 1px dashed var(--crypt);
+}
+
+/* ─── Coin / chip ─── */
+.coin {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+.coin-eth {
+  background: linear-gradient(180deg, #627eea, #3c5dd9);
+  color: #fff;
+  border-color: #3c5dd9;
+}
+.coin-usdc {
+  background: #2775ca;
+  color: #fff;
+  border-color: #1e5fa5;
+}
+.coin-zama {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: #d4a800;
+}
+
+/* ─── Tab pill ─── */
+.tab-pill {
+  display: inline-flex;
+  background: var(--bg-1);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.tab-pill button {
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.tab-pill button.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.tab-pill button:not(.active):hover {
+  color: var(--ink);
+}
+
+/* ─── Misc ─── */
+.divider {
+  height: 1px;
+  background: var(--line);
+  width: 100%;
+}
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ink-2);
+  background: var(--bg-2);
+}
+
+/* ─── Scrollable region ─── */
+.scroll-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.scroll-y::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* ─── Progress bar ─── */
+.bar-track {
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+.bar-fill.fhe {
+  background: var(--fhe);
+}
+
+/* ─── Pulse dot ─── */
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fhe);
+  box-shadow: 0 0 0 0 rgba(182, 245, 105, 0.6);
+  animation: dotpulse 1.6s infinite;
+  flex-shrink: 0;
+}
+@keyframes dotpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(182, 245, 105, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(182, 245, 105, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(182, 245, 105, 0);
+  }
+}
+
+/* ─── Reveal animations ─── */
+@keyframes flap {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-180deg);
+  }
+}
+@keyframes coinpop {
+  0% {
+    transform: translateY(0) scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(-4px) rotate(-1.5deg);
+  }
+  75% {
+    transform: translateX(4px) rotate(1.5deg);
+  }
+}
+.shaking {
+  animation: shake 0.9s ease-in-out infinite;
+  transform-origin: center 80%;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+@keyframes fall {
+  0% {
+    transform: translateY(-20px) rotate(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(420px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ─── Light-mode override (set on .cr-app) ─── */
+.cr-app.light {
+  --bg: #faf8f3;
+  --bg-1: #ffffff;
+  --bg-2: #f3f0e8;
+  --bg-3: #ebe6d8;
+  --line: #e0dccf;
+  --line-2: #cfc9b6;
+  --ink: #14140e;
+  --ink-2: #4a4a3e;
+  --ink-3: #7a7468;
+  --ink-4: #b0aa98;
+  --accent-ink: #0a0a0a;
+}
+
+/* ─── Responsive app shell ─── */
+@media (max-width: 767px) {
+  html,
+  body,
+  .cr-app,
+  .app-shell {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .app-topbar {
+    height: auto !important;
+    min-height: 54px;
+    padding: 10px 12px !important;
+    gap: 10px;
+  }
+
+  .app-topbar .tick {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-topbar-right {
+    gap: 6px !important;
+  }
+
+  .app-topbar-balance {
+    display: none !important;
+  }
+
+  .app-shell-body {
+    display: block !important;
+    min-width: 0;
+  }
+
+  .app-shell-body > div[style*="overflow: auto"] {
+    padding: 18px 14px 96px !important;
+    width: 100% !important;
+  }
+
+  .app-shell-body [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app-shell-body [style*="position: sticky"] {
+    position: static !important;
+  }
+
+  .side-nav {
+    position: fixed !important;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto !important;
+    height: 64px;
+    z-index: 90;
+    border: 1px solid var(--line-2) !important;
+    border-radius: 14px;
+    padding: 6px !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    justify-content: space-between;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  }
+
+  .side-nav-heading,
+  .side-nav-spacer,
+  .side-nav-footer {
+    display: none !important;
+  }
+
+  .side-nav-link {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px !important;
+    padding: 6px 4px !important;
+    font-size: 10px !important;
+    text-align: center;
+  }
+
+  .side-nav-link svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .side-nav-label {
+    flex: 0 !important;
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 56px;
+  }
+
+  .tab-pill {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .tab-pill button {
+    padding: 7px 10px;
+    white-space: nowrap;
+  }
+
+  .cr-btn {
+    min-width: 0;
+  }
+
+  .modal-panel {
+    max-height: calc(100vh - 36px);
+    overflow: auto;
+  }
+}

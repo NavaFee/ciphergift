@@ -1,0 +1,127 @@
+[
+  {
+    "type": "event",
+    "name": "PacketCreated",
+    "anonymous": false,
+    "inputs": [
+      { "name": "id", "type": "uint256", "indexed": true },
+      { "name": "creator", "type": "address", "indexed": true },
+      { "name": "ptype", "type": "uint8", "indexed": false },
+      { "name": "totalShares", "type": "uint32", "indexed": false },
+      { "name": "expiresAt", "type": "uint64", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PacketAssetBound",
+    "anonymous": false,
+    "inputs": [
+      { "name": "id", "type": "uint256", "indexed": true },
+      { "name": "assetId", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PacketClaimed",
+    "anonymous": false,
+    "inputs": [
+      { "name": "id", "type": "uint256", "indexed": true },
+      { "name": "claimer", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PacketRevealed",
+    "anonymous": false,
+    "inputs": [
+      { "name": "id", "type": "uint256", "indexed": true },
+      { "name": "claimer", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PacketRefunded",
+    "anonymous": false,
+    "inputs": [{ "name": "id", "type": "uint256", "indexed": true }]
+  },
+  {
+    "type": "event",
+    "name": "AssetVaultSet",
+    "anonymous": false,
+    "inputs": [
+      { "name": "assetId", "type": "address", "indexed": true },
+      { "name": "enabled", "type": "bool", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Paused",
+    "anonymous": false,
+    "inputs": [{ "name": "by", "type": "address", "indexed": true }]
+  },
+  {
+    "type": "event",
+    "name": "Unpaused",
+    "anonymous": false,
+    "inputs": [{ "name": "by", "type": "address", "indexed": true }]
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferStarted",
+    "anonymous": false,
+    "inputs": [
+      { "name": "previousOwner", "type": "address", "indexed": true },
+      { "name": "newOwner", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "anonymous": false,
+    "inputs": [
+      { "name": "previousOwner", "type": "address", "indexed": true },
+      { "name": "newOwner", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getPacket",
+    "stateMutability": "view",
+    "inputs": [{ "name": "id", "type": "uint256" }],
+    "outputs": [
+      { "name": "creator", "type": "address" },
+      { "name": "createdAt", "type": "uint64" },
+      { "name": "expiresAt", "type": "uint64" },
+      { "name": "packetType", "type": "uint8" },
+      { "name": "totalShares", "type": "uint32" },
+      { "name": "claimedCount", "type": "uint32" },
+      { "name": "maxShareScalar", "type": "uint64" },
+      { "name": "note", "type": "string" },
+      { "name": "refunded", "type": "bool" }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getPacketAsset",
+    "stateMutability": "view",
+    "inputs": [{ "name": "id", "type": "uint256" }],
+    "outputs": [{ "name": "", "type": "address" }]
+  },
+  {
+    "type": "function",
+    "name": "allowlistRoot",
+    "stateMutability": "view",
+    "inputs": [{ "name": "id", "type": "uint256" }],
+    "outputs": [{ "name": "", "type": "bytes32" }]
+  },
+  {
+    "type": "function",
+    "name": "getSlotAmount",
+    "stateMutability": "view",
+    "inputs": [
+      { "name": "id", "type": "uint256" },
+      { "name": "slotIndex", "type": "uint32" }
+    ],
+    "outputs": [{ "name": "", "type": "bytes32" }]
+  }
+]

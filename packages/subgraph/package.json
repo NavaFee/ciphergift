@@ -1,0 +1,20 @@
+{
+  "name": "subgraph",
+  "version": "0.1.0",
+  "private": true,
+  "license": "BSD-3-Clause-Clear",
+  "description": "The Graph subgraph for CipherGift — replaces the in-memory packages/indexer for hosted deployments.",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "auth": "graph auth",
+    "deploy:studio": "graph deploy ciphergift",
+    "create:local": "graph create --node http://localhost:8020/ ciphergift/local",
+    "remove:local": "graph remove --node http://localhost:8020/ ciphergift/local",
+    "deploy:local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ciphergift/local"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.93.3",
+    "@graphprotocol/graph-ts": "^0.36.0"
+  }
+}

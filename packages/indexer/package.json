@@ -1,0 +1,24 @@
+{
+  "name": "indexer",
+  "version": "0.1.0",
+  "private": true,
+  "license": "BSD-3-Clause-Clear",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.13",
+    "viem": "^2.47.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  }
+}

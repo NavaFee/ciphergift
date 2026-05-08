@@ -1,0 +1,79 @@
+{
+  "name": "ciphergift",
+  "version": "0.1.0",
+  "private": true,
+  "license": "BSD-3-Clause-Clear",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "scripts": {
+    "chain": "./scripts/chain.sh",
+    "deploy:localhost": "./scripts/deploy-localhost.sh",
+    "deploy:sepolia": "./scripts/deploy-sepolia.sh",
+    "generate": "ts-node ./scripts/generateTsAbis.ts",
+    "postinstall": "ts-node ./scripts/generateTsAbis.ts || true",
+    "contracts:install": "cd packages/foundry && forge soldeer install",
+    "contracts:build": "cd packages/foundry && forge build",
+    "contracts:test": "cd packages/foundry && forge test -vv",
+    "compile": "cd packages/foundry && forge build",
+    "test": "cd packages/foundry && forge test",
+    "start": "pnpm --filter ./packages/site dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "pnpm site:lint",
+    "site:build": "pnpm --filter ./packages/site build",
+    "site:check-types": "pnpm --filter ./packages/site check-types",
+    "site:lint": "pnpm --filter ./packages/site lint",
+    "site:serve": "pnpm --filter ./packages/site serve",
+    "indexer:dev": "pnpm --filter ./packages/indexer dev",
+    "indexer:start": "pnpm --filter ./packages/indexer start",
+    "indexer:check-types": "pnpm --filter ./packages/indexer check-types",
+    "subgraph:codegen": "pnpm --filter ./packages/subgraph codegen",
+    "subgraph:build": "pnpm --filter ./packages/subgraph build",
+    "subgraph:deploy": "pnpm --filter ./packages/subgraph deploy:studio",
+    "vercel": "pnpm --filter ./packages/site vercel",
+    "vercel:login": "pnpm --filter ./packages/site vercel:login",
+    "vercel:yolo": "pnpm --filter ./packages/site vercel:yolo",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "packages/site/**/*.{ts,tsx,js,jsx}": [
+      "pnpm exec prettier --write",
+      "pnpm --filter ./packages/site exec eslint --fix"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "pnpm exec prettier --write"
+    ],
+    "packages/foundry/**/*.sol": [
+      "forge fmt"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "viem": "^2.47.12"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bufferutil",
+      "esbuild",
+      "keccak",
+      "protobufjs",
+      "secp256k1",
+      "sharp",
+      "unrs-resolver",
+      "utf-8-validate",
+      "yarn"
+    ]
+  }
+}

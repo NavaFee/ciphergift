@@ -1,0 +1,81 @@
+"""
+Mirrors the entity shape of the legacy in-memory indexer
+(packages/indexer/src/store.ts) so the frontend's PacketSummary mapping
+keeps working — only the transport (REST → GraphQL) changes.
+"""
+
+type Packet @entity(immutable: false) {
+  "Packet ID as a string (uint256). Same as the on-chain id."
+  id: ID!
+  creator: Bytes!
+  createdAt: BigInt!
+  expiresAt: BigInt!
+  "0=RANDOM, 1=EQUAL, 2=TARGETED, 3=PASSWORD, 4=BLIND."
+  packetType: Int!
+  totalShares: Int!
+  claimedCount: Int!
+  "BLIND only — number of claims that have been revealed and credited."
+  revealedCount: Int!
+  maxShareScalar: BigInt!
+  "Address of the asset vault backing this packet. Zero address for the default cETH vault."
+  assetId: Bytes
+  note: String!
+  refunded: Boolean!
+  allowlistRoot: Bytes!
+  createdAtBlock: BigInt!
+  createdAtTx: Bytes!
+  claims: [Claim!]! @derivedFrom(field: "packet")
+  reveals: [Reveal!]! @derivedFrom(field: "packet")
+}
+
+type Claim @entity(immutable: true) {
+  "`${packetId}-${claimer}` to enforce one record per (packet, wallet)."
+  id: ID!
+  packet: Packet!
+  claimer: Bytes!
+  blockNumber: BigInt!
+  txHash: Bytes!
+  timestamp: BigInt!
+}
+
+type Reveal @entity(immutable: true) {
+  id: ID!
+  packet: Packet!
+  claimer: Bytes!
+  blockNumber: BigInt!
+  txHash: Bytes!
+  timestamp: BigInt!
+}
+
+type Withdrawal @entity(immutable: false) {
+  "Withdrawal request id (uint256) as a string."
+  id: ID!
+  user: Bytes!
+  "requested | fulfilled | cancelled"
+  status: String!
+  requestedAtBlock: BigInt!
+  resolvedAtBlock: BigInt
+  units: BigInt
+  weiAmount: BigInt
+}
+
+type AssetVault @entity(immutable: false) {
+  "Vault address (lowercased)."
+  id: ID!
+  enabled: Boolean!
+  blockNumber: BigInt!
+}
+
+"""
+Singleton (id = 'state'). Tracks Pause / Ownable2Step transitions so the
+/status page can render the same banner the legacy /ops endpoint backed.
+"""
+type OperationsState @entity(immutable: false) {
+  id: ID!
+  paused: Boolean!
+  pausedAtBlock: BigInt
+  pausedBy: Bytes
+  owner: Bytes
+  pendingOwner: Bytes
+  ownershipChangedAtBlock: BigInt
+}

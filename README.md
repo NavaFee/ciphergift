@@ -6,6 +6,15 @@ Confidential gift packets on [Zama FHEVM](https://docs.zama.ai/fhevm). Senders c
 
 Targets Sepolia (FHEVM v0.11) and a local FHEVM stack via `pnpm chain`.
 
+**Watch the demo →** https://youtu.be/RghDukEKUJ0
+**Try it on Sepolia →** https://www.ciphergift.xyz
+
+🎁 **Launch gift packet** — a confidential CipherGift is waiting for you. Claim before it expires: https://www.ciphergift.xyz/r/12
+
+<a href="https://www.ciphergift.xyz/r/12">
+  <img src="docs/images/ciphergift-packet-12.png" alt="CipherGift launch packet #12 — scan to claim" width="320" />
+</a>
+
 ---
 
 ## What it does

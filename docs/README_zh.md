@@ -6,6 +6,15 @@
 
 支持 Sepolia（FHEVM v0.11），也可以通过 `pnpm chain` 起一套本地 FHEVM。
 
+**Demo 视频 →** https://youtu.be/RghDukEKUJ0
+**在 Sepolia 上体验 →** https://www.ciphergift.xyz
+
+🎁 **发布日红包** —— 我给大家发了一个加密红包，过期前来抢：https://www.ciphergift.xyz/r/12
+
+<a href="https://www.ciphergift.xyz/r/12">
+  <img src="./images/ciphergift-packet-12.png" alt="CipherGift 发布日红包 #12 — 扫码领取" width="320" />
+</a>
+
 ---
 
 ## 这个项目做什么

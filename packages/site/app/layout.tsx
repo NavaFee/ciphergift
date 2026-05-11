@@ -1,4 +1,5 @@
 import "@rainbow-me/rainbowkit/styles.css";
+import { Analytics } from "@vercel/analytics/next";
 import { DappProviderBoundary } from "~~/components/DappProviderBoundary";
 import "~~/styles/globals.css";
 import { getMetadata } from "~~/utils/helper/getMetadata";
@@ -14,6 +15,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
     <html suppressHydrationWarning>
       <body suppressHydrationWarning>
         <DappProviderBoundary>{children}</DappProviderBoundary>
+        <Analytics />
       </body>
     </html>
   );
